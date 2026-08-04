@@ -70,6 +70,7 @@ const updateAvatar = async (userId, avatarUrl) => {
 };
 
 
+
 export default {
   create,
   findByEmail,

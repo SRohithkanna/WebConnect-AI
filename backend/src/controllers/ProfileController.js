@@ -36,7 +36,25 @@ const updateMyProfile = async (req, res, next) => {
   }
 };
 
+const getPublicProfile = async (req, res, next) => {
+  try {
+    const profile =
+      await ProfileService.getPublicProfile(
+        req.params.username
+      );
+
+    return successResponse({
+      res,
+      message: 'Profile fetched successfully.',
+      data: profile,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   getMyProfile,
   updateMyProfile,
+  getPublicProfile,
 };

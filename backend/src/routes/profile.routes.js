@@ -22,5 +22,8 @@ router.patch(
   validate(updateProfileSchema),
   ProfileController.updateMyProfile
 );
-
+router.get(
+  '/:username',
+  ProfileController.getPublicProfile
+);
 export default router;
