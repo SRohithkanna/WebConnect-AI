@@ -2,6 +2,11 @@ import { StatusCodes } from 'http-status-codes';
 
 import UserRepository from '../repositories/UserRepository.js';
 import SessionRepository from '../repositories/SessionRepository.js';
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from '../utils/jwt.js';
 
 import {
   generateAccessToken,
@@ -130,8 +135,72 @@ const login = async ({
     refreshToken,
   };
 };
+const refreshToken = async (token) => {
+  const payload = verifyRefreshToken(token);
+
+  const refreshTokenHash = hashToken(token);
+
+  const session = await SessionRepository.findByRefreshTokenHash(
+    refreshTokenHash
+  );
+
+  if (!session || session.isRevoked) {
+    const error = new Error('Invalid refresh token.');
+    error.statusCode = StatusCodes.UNAUTHORIZED;
+    throw error;
+  }
+
+  const accessToken = generateAccessToken({
+    userId: payload.userId,
+  });
+
+  const newRefreshToken = generateRefreshToken({
+    userId: payload.userId,
+  });
+
+  const newRefreshTokenHash = hashToken(newRefreshToken);
+
+  await SessionRepository.revokeSession(session._id);
+
+  await SessionRepository.create({
+    user: payload.userId,
+    refreshTokenHash: newRefreshTokenHash,
+    deviceName: session.deviceName,
+    browser: session.browser,
+    operatingSystem: session.operatingSystem,
+    ipAddress: session.ipAddress,
+    userAgent: session.userAgent,
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  });
+
+  return {
+    accessToken,
+    refreshToken: newRefreshToken,
+  };
+};
+
+const logout = async (token) => {
+  const refreshTokenHash = hashToken(token);
+
+  const session = await SessionRepository.findByRefreshTokenHash(
+    refreshTokenHash
+  );
+
+  if (!session) {
+    return;
+  }
+
+  await SessionRepository.revokeSession(session._id);
+};
+
+const logoutAllDevices = async (userId) => {
+  await SessionRepository.revokeAllSessions(userId);
+};
 
 export default {
   register,
   login,
+  refreshToken,
+  logout,
+  logoutAllDevices,
 };
