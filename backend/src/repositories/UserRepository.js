@@ -42,6 +42,34 @@ const updateLastLogin = async (userId) => {
   );
 };
 
+const findProfileById = async (userId) => {
+  return User.findById(userId);
+};
+
+const updateProfile = async (userId, payload) => {
+  return User.findByIdAndUpdate(
+    userId,
+    payload,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+};
+
+const updateAvatar = async (userId, avatarUrl) => {
+  return User.findByIdAndUpdate(
+    userId,
+    {
+      avatar: avatarUrl,
+    },
+    {
+      new: true,
+    }
+  );
+};
+
+
 export default {
   create,
   findByEmail,
@@ -50,4 +78,7 @@ export default {
   existsByEmail,
   existsByUsername,
   updateLastLogin,
+  findProfileById,
+  updateProfile,
+  updateAvatar,
 };

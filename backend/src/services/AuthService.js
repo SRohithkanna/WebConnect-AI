@@ -8,11 +8,6 @@ import {
   verifyRefreshToken,
 } from '../utils/jwt.js';
 
-import {
-  generateAccessToken,
-  generateRefreshToken,
-} from '../utils/jwt.js';
-
 import { hashToken } from '../utils/hash.js';
 
 const register = async ({

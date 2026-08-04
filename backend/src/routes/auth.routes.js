@@ -4,6 +4,8 @@ import AuthController from '../controllers/AuthController.js';
 
 import validate from '../validators/validate.js';
 
+import authenticate from '../middlewares/auth.middleware.js';
+
 import {
   registerSchema,
   loginSchema,
@@ -35,6 +37,7 @@ router.post(
 
 router.post(
   '/logout-all',
+  authenticate,
   AuthController.logoutAllDevices
 );
 

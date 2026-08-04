@@ -1,4 +1,5 @@
 import { StatusCodes } from 'http-status-codes';
+import { ZodError } from 'zod';
 
 const validate = (schema) => {
   return async (req, res, next) => {
@@ -9,20 +10,23 @@ const validate = (schema) => {
         query: req.query,
       });
 
+      // Only replace req.body
       req.body = parsed.body;
-      req.params = parsed.params ?? req.params;
-      req.query = parsed.query ?? req.query;
 
       next();
     } catch (error) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        success: false,
-        message: 'Validation failed.',
-        errors: error.errors?.map((err) => ({
-          field: err.path.join('.'),
-          message: err.message,
-        })),
-      });
+      if (error instanceof ZodError) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          success: false,
+          message: 'Validation failed.',
+          errors: error.issues.map((issue) => ({
+            field: issue.path.join('.'),
+            message: issue.message,
+          })),
+        });
+      }
+
+      next(error);
     }
   };
 };

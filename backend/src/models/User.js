@@ -57,19 +57,85 @@ const userSchema = new mongoose.Schema(
       default: '',
     },
 
+    headline: {
+      type: String,
+      trim: true,
+      maxlength: 120,
+      default: '',
+    },
+
+    bio: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+      default: '',
+    },
+
+    location: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+      default: '',
+    },
+
+    company: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+      default: '',
+    },
+
+    currentPosition: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+      default: '',
+    },
+
+    yearsOfExperience: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
+    portfolio: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+
     github: {
       type: String,
+      trim: true,
       default: '',
     },
 
     linkedin: {
       type: String,
+      trim: true,
+      default: '',
+    },
+
+    twitter: {
+      type: String,
+      trim: true,
       default: '',
     },
 
     skills: {
       type: [String],
       default: [],
+    },
+
+    interests: {
+      type: [String],
+      default: [],
+    },
+
+    availability: {
+      type: String,
+      enum: ['Open to Work', 'Open to Freelance', 'Not Available'],
+      default: 'Open to Work',
     },
 
     role: {
@@ -93,10 +159,6 @@ const userSchema = new mongoose.Schema(
     versionKey: false,
   }
 );
-
-userSchema.index({ email: 1 });
-
-userSchema.index({ username: 1 });
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
