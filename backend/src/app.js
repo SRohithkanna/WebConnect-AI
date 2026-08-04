@@ -13,6 +13,7 @@ import notFoundMiddleware from './middlewares/notFound.middleware.js';
 
 //importing routes
 import healthRoutes from './routes/health.routes.js';
+import authRoutes from './routes/auth.routes.js';
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use(
 */
 
 app.use('/api/v1/health', healthRoutes);
+app.use('/api/v1/auth', authRoutes);
 
 /*
 |--------------------------------------------------------------------------
