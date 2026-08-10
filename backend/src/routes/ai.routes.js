@@ -12,4 +12,16 @@ router.post(
   AIController.analyzeProfile
 );
 
+router.get(
+  '/profile-analysis/latest',
+  authenticate,
+  AIController.getLatestAnalysis
+);
+
+router.get(
+  '/profile-analysis/history',
+  authenticate,
+  AIController.getAnalysisHistory
+);
+
 export default router;

@@ -7,9 +7,11 @@ const create = async (data) => {
 const findLatestByUserId = async (userId) => {
   return ProfileAnalysis.findOne({
     user: userId,
-  }).sort({
-    createdAt: -1,
-  });
+  })
+    .sort({
+      createdAt: -1,
+    })
+    .lean();
 };
 
 const findByUserId = async (
@@ -28,8 +30,15 @@ const findByUserId = async (
     .lean();
 };
 
+const countByUserId = async (userId) => {
+  return ProfileAnalysis.countDocuments({
+    user: userId,
+  });
+};
+
 export default {
   create,
   findLatestByUserId,
   findByUserId,
+  countByUserId,
 };

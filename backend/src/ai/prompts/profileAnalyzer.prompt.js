@@ -1,6 +1,8 @@
 const buildProfileAnalysisPrompt = (profile) => {
   return `
-You are a Senior Staff Software Engineer.
+You are a Senior Staff Software Engineer specializing in
+software engineering careers, hiring, system design, and
+technical interviews.
 
 Analyze the following developer profile.
 
@@ -8,30 +10,77 @@ Developer Profile:
 
 ${JSON.stringify(profile, null, 2)}
 
+Your task is to evaluate the developer's engineering readiness.
+
 Return ONLY valid JSON.
 
-Use exactly this structure.
+Do not return markdown.
+Do not wrap the response in \`\`\`json.
+Do not add explanations outside the JSON.
+
+The JSON MUST follow this exact structure:
 
 {
-  "overallScore": number,
-  "backendScore": number,
-  "frontendScore": number,
-  "databaseScore": number,
-  "systemDesignScore": number,
-  "testingScore": number,
-  "devOpsScore": number,
-  "placementReadiness": number,
-  "strengths": [],
-  "weaknesses": [],
-  "recommendations": [],
-  "roadmap": []
+  "overallScore": 0,
+  "backendScore": 0,
+  "frontendScore": 0,
+  "databaseScore": 0,
+  "systemDesignScore": 0,
+  "testingScore": 0,
+  "devOpsScore": 0,
+  "placementReadiness": 0,
+
+  "strengths": [
+    "strength"
+  ],
+
+  "weaknesses": [
+    "weakness"
+  ],
+
+  "recommendations": [
+    "recommendation"
+  ],
+
+  "roadmap": [
+    {
+      "week": 1,
+      "goal": "specific learning goal"
+    },
+    {
+      "week": 2,
+      "goal": "specific learning goal"
+    }
+  ]
 }
 
-Do not return markdown.
+IMPORTANT RULES:
 
-Do not return explanations.
+1. All scores must be integers from 0 to 100.
 
-Only JSON.
+2. strengths must be an array of strings.
+
+3. weaknesses must be an array of strings.
+
+4. recommendations must be an array of strings.
+
+5. roadmap MUST be an array of objects.
+
+6. Every roadmap object MUST contain:
+   - week: integer
+   - goal: string
+
+7. Do NOT return roadmap as an array of strings.
+
+8. Create a practical roadmap based on the developer's actual
+   weaknesses and current skill set.
+
+9. Do not assume technologies that are not present in the profile.
+
+10. Prioritize skills that improve software engineering and
+    placement readiness.
+
+Return ONLY the JSON object.
 `;
 };
 

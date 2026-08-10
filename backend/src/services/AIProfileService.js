@@ -64,6 +64,57 @@ const analyzeProfile = async (userId) => {
   return savedAnalysis;
 };
 
+const getLatestAnalysis = async (userId) => {
+  const analysis =
+    await ProfileAnalysisRepository.findLatestByUserId(
+      userId
+    );
+
+  if (!analysis) {
+    const error = new Error(
+      'No profile analysis found.'
+    );
+
+    error.statusCode = StatusCodes.NOT_FOUND;
+
+    throw error;
+  }
+
+  return analysis;
+};
+
+const getAnalysisHistory = async (
+  userId,
+  page = 1,
+  limit = 10
+) => {
+  const skip = (page - 1) * limit;
+
+  const [analyses, total] = await Promise.all([
+    ProfileAnalysisRepository.findByUserId(
+      userId,
+      skip,
+      limit
+    ),
+
+    ProfileAnalysisRepository.countByUserId(userId),
+  ]);
+
+  return {
+    analyses,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+      hasNextPage: page < Math.ceil(total / limit),
+      hasPreviousPage: page > 1,
+    },
+  };
+};
+
 export default {
   analyzeProfile,
+  getLatestAnalysis,
+  getAnalysisHistory,
 };
