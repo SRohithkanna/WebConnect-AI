@@ -15,7 +15,7 @@ import notFoundMiddleware from './middlewares/notFound.middleware.js';
 import healthRoutes from './routes/health.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import profileRoutes from './routes/profile.routes.js';
-
+import aiRoutes from './routes/ai.routes.js';
 
 const app = express();
 
@@ -61,6 +61,7 @@ app.use(
 app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/profile', profileRoutes);
+app.use('/api/v1/ai', aiRoutes);
 /*
 |--------------------------------------------------------------------------
 | 404

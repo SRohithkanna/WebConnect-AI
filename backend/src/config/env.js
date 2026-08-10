@@ -11,6 +11,7 @@ const requiredEnvVariables = [
   'JWT_REFRESH_SECRET',
   'ACCESS_TOKEN_EXPIRES_IN',
   'REFRESH_TOKEN_EXPIRES_IN',
+  'GEMINI_API_KEY',
 ];
 
 const missingVariables = requiredEnvVariables.filter(
@@ -39,6 +40,8 @@ const env = Object.freeze({
   ACCESS_TOKEN_EXPIRES_IN: process.env.ACCESS_TOKEN_EXPIRES_IN,
 
   REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN,
+
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY,
 });
 
 export default env;

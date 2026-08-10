@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
 import UserRepository from '../repositories/UserRepository.js';
+import ProfileAnalysisRepository from '../repositories/ProfileAnalysisRepository.js';
 
 import GeminiProvider from '../ai/providers/GeminiProvider.js';
 
@@ -36,7 +37,8 @@ const analyzeProfile = async (userId) => {
 
   const prompt = buildProfileAnalysisPrompt(profileData);
 
-  const aiResponse = await GeminiProvider.generateContent(prompt);
+  const aiResponse =
+    await GeminiProvider.generateContent(prompt);
 
   let analysis;
 
@@ -53,7 +55,13 @@ const analyzeProfile = async (userId) => {
     throw parsingError;
   }
 
-  return analysis;
+  const savedAnalysis =
+    await ProfileAnalysisRepository.create({
+      user: userId,
+      ...analysis,
+    });
+
+  return savedAnalysis;
 };
 
 export default {
