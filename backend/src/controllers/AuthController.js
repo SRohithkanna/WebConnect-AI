@@ -64,6 +64,15 @@ const login = async (req, res) => {
 const refresh = async (req, res) => {
   const token = req.cookies[REFRESH_COOKIE_NAME];
 
+  if (!token) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      success: false,
+      message: 'Refresh token required.',
+      data: null,
+      errors: null,
+    });
+  }
+
   const result = await AuthService.refreshToken(token);
 
   res.cookie(

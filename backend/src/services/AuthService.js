@@ -131,17 +131,34 @@ const login = async ({
   };
 };
 const refreshToken = async (token) => {
-  const payload = verifyRefreshToken(token);
+  let payload;
+
+  try {
+    payload = verifyRefreshToken(token);
+  } catch {
+    const error = new Error(
+      'Invalid or expired refresh token.'
+    );
+
+    error.statusCode = StatusCodes.UNAUTHORIZED;
+
+    throw error;
+  }
 
   const refreshTokenHash = hashToken(token);
 
-  const session = await SessionRepository.findByRefreshTokenHash(
-    refreshTokenHash
-  );
+  const session =
+    await SessionRepository.findByRefreshTokenHash(
+      refreshTokenHash
+    );
 
   if (!session || session.isRevoked) {
-    const error = new Error('Invalid refresh token.');
+    const error = new Error(
+      'Invalid refresh token.'
+    );
+
     error.statusCode = StatusCodes.UNAUTHORIZED;
+
     throw error;
   }
 
@@ -149,13 +166,17 @@ const refreshToken = async (token) => {
     userId: payload.userId,
   });
 
-  const newRefreshToken = generateRefreshToken({
-    userId: payload.userId,
-  });
+  const newRefreshToken =
+    generateRefreshToken({
+      userId: payload.userId,
+    });
 
-  const newRefreshTokenHash = hashToken(newRefreshToken);
+  const newRefreshTokenHash =
+    hashToken(newRefreshToken);
 
-  await SessionRepository.revokeSession(session._id);
+  await SessionRepository.revokeSession(
+    session._id
+  );
 
   await SessionRepository.create({
     user: payload.userId,
@@ -165,7 +186,10 @@ const refreshToken = async (token) => {
     operatingSystem: session.operatingSystem,
     ipAddress: session.ipAddress,
     userAgent: session.userAgent,
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    expiresAt: new Date(
+      Date.now() +
+        7 * 24 * 60 * 60 * 1000
+    ),
   });
 
   return {
