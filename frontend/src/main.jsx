@@ -1,4 +1,5 @@
 import React from 'react';
+
 import ReactDOM from 'react-dom/client';
 
 import { Provider } from 'react-redux';
@@ -13,7 +14,7 @@ import AuthBootstrap from './features/auth/AuthBootstrap.jsx';
 
 import './index.css';
 
-setupInterceptors(store);
+setupInterceptors();
 
 ReactDOM.createRoot(
   document.getElementById('root')
