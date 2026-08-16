@@ -4,8 +4,8 @@ import {
   Button,
   Card,
   CardContent,
-  Chip,
   CircularProgress,
+  Chip,
   Divider,
   LinearProgress,
   Stack,
@@ -18,23 +18,62 @@ import WarningAmberOutlined from '@mui/icons-material/WarningAmberOutlined';
 import LightbulbOutlined from '@mui/icons-material/LightbulbOutlined';
 import RouteOutlined from '@mui/icons-material/RouteOutlined';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import aiApi from '../api/aiApi.js';
 
 const AIAnalysisPage = () => {
   const [analysis, setAnalysis] = useState(null);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const [analyzing, setAnalyzing] = useState(false);
 
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    const loadLatestAnalysis = async () => {
+      try {
+        setLoading(true);
+        setError('');
+
+        const response =
+          await aiApi.getLatestAnalysis();
+
+        setAnalysis(response.data);
+      } catch (err) {
+        /*
+         * 404 means the user has not
+         * generated an analysis yet.
+         */
+        if (
+          err?.response?.status !== 404
+        ) {
+          console.error(
+            'Failed to load latest analysis:',
+            err
+          );
+
+          setError(
+            err?.response?.data?.message ||
+              'Unable to load your latest analysis.'
+          );
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadLatestAnalysis();
+  }, []);
+
   const handleAnalyze = async () => {
     try {
-      setLoading(true);
+      setAnalyzing(true);
       setError('');
 
-      const response = await aiApi.analyzeProfile();
+      const response =
+        await aiApi.analyzeProfile();
 
       setAnalysis(response.data);
     } catch (err) {
@@ -48,121 +87,22 @@ const AIAnalysisPage = () => {
           'Unable to analyze your profile.'
       );
     } finally {
-      setLoading(false);
+      setAnalyzing(false);
     }
   };
 
-  return (
-    <Stack spacing={4}>
-      {/* Page Header */}
+  /*
+   * Initial page loading
+   */
+  if (loading) {
+    return (
+      <Stack spacing={4}>
+        <PageHeader />
 
-      <Box>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1,
-          }}
-        >
-          <AutoAwesome
-            sx={{
-              color: 'primary.main',
-            }}
-          />
-
-          <Typography
-            variant="h4"
-            color="text.primary"
-          >
-            AI Profile Analysis
-          </Typography>
-        </Box>
-
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{
-            mt: 1,
-            maxWidth: 750,
-            lineHeight: 1.7,
-          }}
-        >
-          Get an engineering-focused assessment
-          of your current skills, identify your
-          gaps, and follow a personalized roadmap
-          toward your career goals.
-        </Typography>
-      </Box>
-
-      {/* Error */}
-
-      {error && (
-        <Alert
-          severity="error"
-          onClose={() => setError('')}
-        >
-          {error}
-        </Alert>
-      )}
-
-      {/* Initial State */}
-
-      {!analysis && !loading && (
         <Card>
           <CardContent
             sx={{
-              p: 4,
-              '&:last-child': {
-                pb: 4,
-              },
-            }}
-          >
-            <Stack
-              spacing={3}
-              alignItems="flex-start"
-            >
-              <Typography
-                variant="h6"
-                color="text.primary"
-              >
-                Ready to analyze your profile?
-              </Typography>
-
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                sx={{
-                  maxWidth: 700,
-                  lineHeight: 1.7,
-                }}
-              >
-                Our AI will evaluate your
-                technical profile and generate
-                personalized insights covering
-                your strengths, weaknesses,
-                placement readiness, and an
-                actionable learning roadmap.
-              </Typography>
-
-              <Button
-                variant="contained"
-                startIcon={<AutoAwesome />}
-                onClick={handleAnalyze}
-              >
-                Analyze My Profile
-              </Button>
-            </Stack>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Loading State */}
-
-      {loading && (
-        <Card>
-          <CardContent
-            sx={{
-              minHeight: 300,
+              minHeight: 350,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -177,29 +117,160 @@ const AIAnalysisPage = () => {
               <Typography
                 color="text.secondary"
               >
-                AI is analyzing your profile...
-              </Typography>
-
-              <Typography
-                variant="body2"
-                color="text.secondary"
-              >
-                This may take a few seconds.
+                Loading your latest AI analysis...
               </Typography>
             </Stack>
           </CardContent>
         </Card>
+      </Stack>
+    );
+  }
+
+  return (
+    <Stack spacing={4}>
+      <PageHeader />
+
+      {error && (
+        <Alert
+          severity="error"
+          onClose={() => setError('')}
+        >
+          {error}
+        </Alert>
       )}
 
-      {/* Analysis Result */}
+      {!analysis && (
+        <EmptyAnalysis
+          onAnalyze={handleAnalyze}
+          loading={analyzing}
+        />
+      )}
 
-      {analysis && !loading && (
+      {analysis && (
         <AnalysisResult
           analysis={analysis}
           onReanalyze={handleAnalyze}
+          analyzing={analyzing}
         />
       )}
     </Stack>
+  );
+};
+
+
+/* =========================================================
+   PAGE HEADER
+========================================================= */
+
+const PageHeader = () => {
+  return (
+    <Box>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+        }}
+      >
+        <AutoAwesome
+          sx={{
+            color: 'primary.main',
+          }}
+        />
+
+        <Typography
+          variant="h4"
+          color="text.primary"
+        >
+          AI Profile Analysis
+        </Typography>
+      </Box>
+
+      <Typography
+        variant="body1"
+        color="text.secondary"
+        sx={{
+          mt: 1,
+          maxWidth: 750,
+          lineHeight: 1.7,
+        }}
+      >
+        Get an engineering-focused assessment
+        of your current skills, identify your
+        gaps, and follow a personalized roadmap
+        toward your career goals.
+      </Typography>
+    </Box>
+  );
+};
+
+
+/* =========================================================
+   EMPTY ANALYSIS
+========================================================= */
+
+const EmptyAnalysis = ({
+  onAnalyze,
+  loading,
+}) => {
+  return (
+    <Card>
+      <CardContent
+        sx={{
+          p: 4,
+          '&:last-child': {
+            pb: 4,
+          },
+        }}
+      >
+        <Stack
+          spacing={3}
+          alignItems="flex-start"
+        >
+          <Typography
+            variant="h6"
+            color="text.primary"
+          >
+            Ready to analyze your profile?
+          </Typography>
+
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{
+              maxWidth: 700,
+              lineHeight: 1.7,
+            }}
+          >
+            Our AI will evaluate your technical
+            profile and generate personalized
+            insights covering your strengths,
+            weaknesses, placement readiness,
+            and an actionable learning roadmap.
+          </Typography>
+
+          <Button
+            variant="contained"
+            startIcon={
+              loading ? (
+                <CircularProgress
+                  size={18}
+                  color="inherit"
+                />
+              ) : (
+                <AutoAwesome />
+              )
+            }
+            onClick={onAnalyze}
+            disabled={loading}
+          >
+            {loading
+              ? 'Analyzing...'
+              : 'Analyze My Profile'}
+          </Button>
+        </Stack>
+      </CardContent>
+    </Card>
   );
 };
 
@@ -211,6 +282,7 @@ const AIAnalysisPage = () => {
 const AnalysisResult = ({
   analysis,
   onReanalyze,
+  analyzing,
 }) => {
   const skillScores = [
     {
@@ -227,7 +299,8 @@ const AnalysisResult = ({
     },
     {
       label: 'System Design',
-      value: analysis.systemDesignScore,
+      value:
+        analysis.systemDesignScore,
     },
     {
       label: 'Testing',
@@ -241,7 +314,7 @@ const AnalysisResult = ({
 
   return (
     <Stack spacing={3}>
-      {/* Score Overview */}
+      {/* Overall + Skills */}
 
       <Box
         sx={{
@@ -253,7 +326,7 @@ const AnalysisResult = ({
           gap: 3,
         }}
       >
-        {/* Overall Score */}
+        {/* Overall */}
 
         <Card>
           <CardContent
@@ -280,7 +353,7 @@ const AnalysisResult = ({
                 mt: 0.5,
               }}
             >
-              Your overall technical assessment
+              Latest AI assessment
             </Typography>
 
             <Box
@@ -307,22 +380,33 @@ const AnalysisResult = ({
               </Typography>
             </Box>
 
-            <Typography
-              variant="body2"
-              color="text.secondary"
+            <Box
               sx={{
-                mt: 1,
+                mt: 2,
               }}
             >
-              Placement readiness:{' '}
-              <strong>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+              >
+                Placement readiness
+              </Typography>
+
+              <Typography
+                variant="h6"
+                fontWeight={700}
+                color="text.primary"
+                sx={{
+                  mt: 0.5,
+                }}
+              >
                 {analysis.placementReadiness}%
-              </strong>
-            </Typography>
+              </Typography>
+            </Box>
           </CardContent>
         </Card>
 
-        {/* Skill Scores */}
+        {/* Skills */}
 
         <Card>
           <CardContent
@@ -366,7 +450,7 @@ const AnalysisResult = ({
         </Card>
       </Box>
 
-      {/* Strengths / Weaknesses */}
+      {/* Strengths + Weaknesses */}
 
       <Box
         sx={{
@@ -432,8 +516,8 @@ const AnalysisResult = ({
               mb: 3,
             }}
           >
-            The highest-impact actions recommended
-            by the AI based on your current profile.
+            High-impact actions recommended based
+            on your current profile.
           </Typography>
 
           <Stack spacing={2}>
@@ -515,9 +599,8 @@ const AnalysisResult = ({
               mb: 3,
             }}
           >
-            A personalized sequence of learning and
-            implementation goals generated from your
-            profile gaps.
+            A personalized sequence of learning
+            and implementation goals.
           </Typography>
 
           <Stack spacing={0}>
@@ -547,10 +630,21 @@ const AnalysisResult = ({
       >
         <Button
           variant="outlined"
-          startIcon={<AutoAwesome />}
+          startIcon={
+            analyzing ? (
+              <CircularProgress
+                size={18}
+              />
+            ) : (
+              <AutoAwesome />
+            )
+          }
           onClick={onReanalyze}
+          disabled={analyzing}
         >
-          Analyze Again
+          {analyzing
+            ? 'Generating New Analysis...'
+            : 'Analyze Again'}
         </Button>
       </Box>
     </Stack>
@@ -707,8 +801,6 @@ const RoadmapItem = ({
         gap: 2,
       }}
     >
-      {/* Timeline */}
-
       <Box
         sx={{
           display: 'flex',
@@ -750,8 +842,6 @@ const RoadmapItem = ({
           />
         )}
       </Box>
-
-      {/* Goal */}
 
       <Box
         sx={{

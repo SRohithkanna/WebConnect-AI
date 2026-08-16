@@ -14,31 +14,7 @@ const findLatestByUserId = async (userId) => {
     .lean();
 };
 
-const findByUserId = async (
-  userId,
-  skip = 0,
-  limit = 10
-) => {
-  return ProfileAnalysis.find({
-    user: userId,
-  })
-    .sort({
-      createdAt: -1,
-    })
-    .skip(skip)
-    .limit(limit)
-    .lean();
-};
-
-const countByUserId = async (userId) => {
-  return ProfileAnalysis.countDocuments({
-    user: userId,
-  });
-};
-
 export default {
   create,
   findLatestByUserId,
-  findByUserId,
-  countByUserId,
 };

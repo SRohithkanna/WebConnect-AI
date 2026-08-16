@@ -9,6 +9,10 @@ import buildProfileAnalysisPrompt from '../ai/prompts/profileAnalyzer.prompt.js'
 
 import parseProfileAnalysis from '../ai/parsers/profileAnalysis.parser.js';
 
+
+
+
+
 const analyzeProfile = async (userId) => {
   const profile = await UserRepository.findProfileById(userId);
 

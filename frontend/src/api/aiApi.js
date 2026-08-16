@@ -8,6 +8,15 @@ const analyzeProfile = async () => {
   return response.data;
 };
 
+const getLatestAnalysis = async () => {
+  const response = await apiClient.get(
+    '/ai/profile-analysis'
+  );
+
+  return response.data;
+};
+
 export default {
   analyzeProfile,
+  getLatestAnalysis,
 };

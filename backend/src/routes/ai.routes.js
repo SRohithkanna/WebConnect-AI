@@ -13,6 +13,13 @@ router.post(
 );
 
 router.get(
+  '/profile-analysis',
+  authenticate,
+  AIController.getLatestAnalysis
+);
+
+
+router.get(
   '/profile-analysis/latest',
   authenticate,
   AIController.getLatestAnalysis
