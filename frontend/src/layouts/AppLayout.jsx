@@ -16,6 +16,7 @@ import {
   Route,
   SettingsOutlined,
   LogoutOutlined,
+  DynamicFeedOutlined,
 } from '@mui/icons-material';
 
 import {
@@ -36,6 +37,11 @@ const navigationItems = [
     path: '/dashboard',
     icon: <DashboardOutlined />,
   },
+  {
+  label: 'Posts',
+  path: '/posts',
+  icon: <DynamicFeedOutlined />,
+},
   {
     label: 'Profile',
     path: '/profile',
