@@ -4,6 +4,8 @@ import PostController from '../controllers/PostController.js';
 
 import authenticate from '../middlewares/auth.middleware.js';
 
+import CommentController from '../controllers/CommentController.js';
+
 const router = express.Router();
 
 router.post(
@@ -28,6 +30,24 @@ router.delete(
   '/:id',
   authenticate,
   PostController.deletePost
+);
+
+router.post(
+  '/:postId/comments',
+  authenticate,
+  CommentController.createComment
+);
+
+router.get(
+  '/:postId/comments',
+  authenticate,
+  CommentController.getComments
+);
+
+router.delete(
+  '/:postId/comments/:commentId',
+  authenticate,
+  CommentController.deleteComment
 );
 
 export default router;
