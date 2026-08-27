@@ -2,6 +2,8 @@ import ResumeService from '../services/ResumeService.js';
 
 import { successResponse } from '../utils/apiResponse.js';
 
+import ResumeAIService from '../services/ResumeAIService.js';
+
 const uploadResume = async (
   req,
   res,
@@ -63,9 +65,45 @@ const deleteResume = async (
     next(error);
   }
 };
+const analyzeResume = async (req, res, next) => {
+  try {
+    const resume =
+      await ResumeAIService.analyzeResume(
+        req.user.userId
+      );
+
+    return successResponse({
+      res,
+      message: 'Resume analyzed successfully.',
+      data: resume,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+const getResumeAnalysis = async (req, res, next) => {
+  try {
+    const analysis =
+      await ResumeAIService.getResumeAnalysis(
+        req.user.userId
+      );
+
+    return successResponse({
+      res,
+      message: 'Resume analysis fetched successfully.',
+      data: analysis,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export default {
   uploadResume,
   getResume,
   deleteResume,
+  analyzeResume,
+  getResumeAnalysis,
 };

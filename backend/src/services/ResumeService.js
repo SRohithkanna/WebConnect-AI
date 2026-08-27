@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 import ResumeRepository from '../repositories/ResumeRepository.js';
+import extractTextFromPdf from '../utils/pdfParser.js';
 
 const uploadResume = async (userId, file) => {
   if (!file) {
@@ -26,6 +27,21 @@ const uploadResume = async (userId, file) => {
     throw error;
   }
 
+  const extractedText =
+    await extractTextFromPdf(file.path);
+
+  if (!extractedText) {
+    await fs.unlink(file.path).catch(() => {});
+
+    const error = new Error(
+      'Unable to extract text from the resume.'
+    );
+
+    error.statusCode = 400;
+
+    throw error;
+  }
+
   const existingResume =
     await ResumeRepository.findByUserId(userId);
 
@@ -41,7 +57,7 @@ const uploadResume = async (userId, file) => {
     filePath: file.path,
     fileType: file.mimetype,
     fileSize: file.size,
-    extractedText: '',
+    extractedText,
     aiAnalysis: null,
     analyzedAt: null,
   };
