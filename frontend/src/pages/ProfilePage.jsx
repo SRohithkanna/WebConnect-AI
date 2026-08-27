@@ -1,446 +1,655 @@
 import {
+  Alert,
   Box,
+  Button,
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Divider,
-  Grid,
-  Link,
+  MenuItem,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 
 import {
-  LocationOnOutlined,
-  BusinessOutlined,
-  Work,
-  SchoolOutlined,
-  LanguageOutlined,
-  GitHub,
-  LinkedIn,
-  Twitter,
+  ArrowBack,
+  Save,
 } from "@mui/icons-material";
 
-import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import apiClient from "../api/axios.js";
 
 const ProfilePage = () => {
-  const user = useSelector((state) => state.auth.user);
+  const navigate = useNavigate();
 
-  const skills = Array.isArray(user?.skills)
-    ? user.skills
-    : [];
+  const [profile, setProfile] = useState(null);
 
-  const interests = Array.isArray(user?.interests)
-    ? user.interests
-    : [];
+  const [formData, setFormData] = useState({
+    headline: "",
+    bio: "",
+    location: "",
+    company: "",
+    currentPosition: "",
+    yearsOfExperience: 0,
+    portfolio: "",
+    github: "",
+    linkedin: "",
+    twitter: "",
+    skills: "",
+    interests: "",
+    availability: "Open to Work",
+  });
 
-  const socialLinks = [
-    {
-      label: "GitHub",
-      value: user?.github,
-      icon: <GitHub />,
-    },
-    {
-      label: "LinkedIn",
-      value: user?.linkedin,
-      icon: <LinkedIn />,
-    },
-    {
-      label: "Twitter",
-      value: user?.twitter,
-      icon: <Twitter />,
-    },
-    {
-      label: "Portfolio",
-      value: user?.portfolio,
-      icon: <LanguageOutlined />,
-    },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  /*
+  |--------------------------------------------------------------------------
+  | Fetch Profile
+  |--------------------------------------------------------------------------
+  */
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await apiClient.get("/profile/me");
+
+      const data = response.data?.data || response.data;
+
+      setProfile(data);
+
+      setFormData({
+        headline: data.headline || "",
+        bio: data.bio || "",
+        location: data.location || "",
+        company: data.company || "",
+        currentPosition: data.currentPosition || "",
+        yearsOfExperience:
+          data.yearsOfExperience ?? 0,
+
+        portfolio: data.portfolio || "",
+        github: data.github || "",
+        linkedin: data.linkedin || "",
+        twitter: data.twitter || "",
+
+        /*
+         * IMPORTANT:
+         * Keep these as strings while editing.
+         * This allows the user to type commas normally.
+         */
+        skills: Array.isArray(data.skills)
+          ? data.skills.join(", ")
+          : "",
+
+        interests: Array.isArray(data.interests)
+          ? data.interests.join(", ")
+          : "",
+
+        availability:
+          data.availability || "Open to Work",
+      });
+    } catch (error) {
+      console.error(
+        "Failed to fetch profile:",
+        error
+      );
+
+      setError(
+        error?.response?.data?.message ||
+          "Failed to load profile."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Handle Input Changes
+  |--------------------------------------------------------------------------
+  */
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Convert comma separated string to array
+  |--------------------------------------------------------------------------
+  */
+
+  const convertToArray = (value) => {
+    return value
+      .split(",")
+      .map((item) => item.trim())
+      .filter((item) => item.length > 0);
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Save Profile
+  |--------------------------------------------------------------------------
+  */
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      setSaving(true);
+      setError("");
+      setSuccess("");
+
+      const payload = {
+        headline: formData.headline,
+        bio: formData.bio,
+        location: formData.location,
+        company: formData.company,
+        currentPosition: formData.currentPosition,
+
+        yearsOfExperience:
+          Number(formData.yearsOfExperience) || 0,
+
+        portfolio: formData.portfolio,
+        github: formData.github,
+        linkedin: formData.linkedin,
+        twitter: formData.twitter,
+
+        /*
+         * Convert strings to arrays ONLY when saving.
+         */
+        skills: convertToArray(formData.skills),
+        interests: convertToArray(
+          formData.interests
+        ),
+
+        availability: formData.availability,
+      };
+
+      const response = await apiClient.patch(
+        "/profile/me",
+        payload
+      );
+
+      const updatedProfile =
+        response.data?.data || response.data;
+
+      setProfile(updatedProfile);
+
+      /*
+       * Update the form with the saved values.
+       */
+      setFormData({
+        headline: updatedProfile.headline || "",
+        bio: updatedProfile.bio || "",
+        location: updatedProfile.location || "",
+        company: updatedProfile.company || "",
+        currentPosition:
+          updatedProfile.currentPosition || "",
+
+        yearsOfExperience:
+          updatedProfile.yearsOfExperience ?? 0,
+
+        portfolio: updatedProfile.portfolio || "",
+        github: updatedProfile.github || "",
+        linkedin: updatedProfile.linkedin || "",
+        twitter: updatedProfile.twitter || "",
+
+        skills: Array.isArray(
+          updatedProfile.skills
+        )
+          ? updatedProfile.skills.join(", ")
+          : "",
+
+        interests: Array.isArray(
+          updatedProfile.interests
+        )
+          ? updatedProfile.interests.join(", ")
+          : "",
+
+        availability:
+          updatedProfile.availability ||
+          "Open to Work",
+      });
+
+      setSuccess(
+        "Profile updated successfully. You can now re-analyse your profile from the AI Analysis page."
+      );
+      setTimeout(() => {
+  navigate("/profile");
+}, 1000);
+    } catch (error) {
+      console.error(
+        "Failed to update profile:",
+        error
+      );
+
+      setError(
+        error?.response?.data?.message ||
+          "Failed to update profile."
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Loading
+  |--------------------------------------------------------------------------
+  */
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          minHeight: "60vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Error
+  |--------------------------------------------------------------------------
+  */
+
+  if (!profile) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Alert severity="error">
+          {error || "Profile not found."}
+        </Alert>
+      </Box>
+    );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | UI
+  |--------------------------------------------------------------------------
+  */
 
   return (
     <Box
       sx={{
         maxWidth: 1000,
         mx: "auto",
-        py: 4,
+        py: 2,
       }}
     >
+      {/* Back Button */}
+
+      <Button
+  startIcon={<ArrowBack />}
+  onClick={() => navigate("/profile")}
+  sx={{ mb: 3 }}
+>
+  Back to Profile
+</Button>
+
       {/* Header */}
-      <Typography
-        variant="h4"
-        fontWeight={700}
-        sx={{ mb: 1 }}
-      >
-        Profile
-      </Typography>
 
-      <Typography
-        color="text.secondary"
-        sx={{ mb: 4 }}
-      >
-        Your developer profile and professional information.
-      </Typography>
+      <Box sx={{ mb: 4 }}>
+        <Typography
+          variant="h4"
+          fontWeight={700}
+        >
+          Edit Profile
+        </Typography>
 
-      {/* Main profile card */}
+        <Typography
+          color="text.secondary"
+          sx={{ mt: 1 }}
+        >
+          Update your developer profile information.
+        </Typography>
+      </Box>
+
+      {/* Alerts */}
+
+      {error && (
+        <Alert
+          severity="error"
+          sx={{ mb: 3 }}
+        >
+          {error}
+        </Alert>
+      )}
+
+      {success && (
+        <Alert
+          severity="success"
+          sx={{ mb: 3 }}
+        >
+          {success}
+        </Alert>
+      )}
+
+      {/* Profile Form */}
+
       <Card
         sx={{
-          borderRadius: 3,
-          mb: 3,
+          borderRadius: 4,
         }}
       >
         <CardContent sx={{ p: 4 }}>
           <Box
-            sx={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 3,
-              flexWrap: "wrap",
-            }}
+            component="form"
+            onSubmit={handleSubmit}
           >
-            {/* Avatar */}
-            <Box
-              sx={{
-                width: 90,
-                height: 90,
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "primary.main",
-                color: "white",
-                fontSize: 34,
-                fontWeight: 700,
-                flexShrink: 0,
-              }}
-            >
-              {user?.name?.charAt(0)?.toUpperCase() || "D"}
-            </Box>
+            <Stack spacing={3}>
+              {/* Basic Information */}
 
-            <Box sx={{ flex: 1 }}>
               <Typography
-                variant="h5"
+                variant="h6"
                 fontWeight={700}
               >
-                {user?.name || "Developer"}
+                Basic Information
               </Typography>
+
+              <Divider />
+
+              <TextField
+                fullWidth
+                label="Headline"
+                name="headline"
+                value={formData.headline}
+                onChange={handleChange}
+                placeholder="Full Stack Developer"
+                inputProps={{
+                  maxLength: 120,
+                }}
+              />
+
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Bio"
+                name="bio"
+                value={formData.bio}
+                onChange={handleChange}
+                placeholder="Tell developers about yourself..."
+                inputProps={{
+                  maxLength: 500,
+                }}
+              />
+
+              {/* Experience */}
 
               <Typography
-                color="text.secondary"
-                sx={{ mb: 1 }}
+                variant="h6"
+                fontWeight={700}
+                sx={{ mt: 2 }}
               >
-                @{user?.username || "developer"}
+                Experience
               </Typography>
 
-              {user?.headline && (
-                <Typography
-                  variant="body1"
-                  sx={{ mb: 2 }}
-                >
-                  {user.headline}
-                </Typography>
-              )}
+              <Divider />
 
-              <Stack
-                direction="row"
-                spacing={2}
-                flexWrap="wrap"
-                useFlexGap
+              <TextField
+                fullWidth
+                label="Current Position"
+                name="currentPosition"
+                value={formData.currentPosition}
+                onChange={handleChange}
+                placeholder="Software Engineer"
+              />
+
+              <TextField
+                fullWidth
+                label="Company"
+                name="company"
+                value={formData.company}
+                onChange={handleChange}
+                placeholder="Google"
+              />
+
+              <TextField
+                fullWidth
+                type="number"
+                label="Years of Experience"
+                name="yearsOfExperience"
+                value={formData.yearsOfExperience}
+                onChange={handleChange}
+                inputProps={{
+                  min: 0,
+                  max: 50,
+                }}
+              />
+
+              {/* Location */}
+
+              <Typography
+                variant="h6"
+                fontWeight={700}
+                sx={{ mt: 2 }}
               >
-                {user?.location && (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.5,
-                    }}
-                  >
-                    <LocationOnOutlined fontSize="small" />
-                    <Typography variant="body2">
-                      {user.location}
-                    </Typography>
-                  </Box>
-                )}
+                Location
+              </Typography>
 
-                {user?.company && (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.5,
-                    }}
-                  >
-                    <BusinessOutlined fontSize="small" />
-                    <Typography variant="body2">
-                      {user.company}
-                    </Typography>
-                  </Box>
-                )}
+              <Divider />
 
-                {user?.currentPosition && (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.5,
-                    }}
-                  >
-                    <Work fontSize="small" />
-                    <Typography variant="body2">
-                      {user.currentPosition}
-                    </Typography>
-                  </Box>
-                )}
-              </Stack>
-            </Box>
+              <TextField
+                fullWidth
+                label="Location"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="Chennai, India"
+              />
+
+              {/* Skills */}
+
+              <Typography
+                variant="h6"
+                fontWeight={700}
+                sx={{ mt: 2 }}
+              >
+                Skills & Interests
+              </Typography>
+
+              <Divider />
+
+              <TextField
+                fullWidth
+                label="Skills"
+                name="skills"
+                value={formData.skills}
+                onChange={handleChange}
+                placeholder="React, Node.js, MongoDB"
+                helperText="Separate skills with commas"
+              />
+
+              <TextField
+                fullWidth
+                label="Interests"
+                name="interests"
+                value={formData.interests}
+                onChange={handleChange}
+                placeholder="AI, Open Source, System Design"
+                helperText="Separate interests with commas"
+              />
+
+              {/* Availability */}
+
+              <TextField
+                fullWidth
+                select
+                label="Availability"
+                name="availability"
+                value={formData.availability}
+                onChange={handleChange}
+              >
+                <MenuItem value="Open to Work">
+                  Open to Work
+                </MenuItem>
+
+                <MenuItem value="Open to Freelance">
+                  Open to Freelance
+                </MenuItem>
+
+                <MenuItem value="Not Available">
+                  Not Available
+                </MenuItem>
+              </TextField>
+
+              {/* Social Links */}
+
+              <Typography
+                variant="h6"
+                fontWeight={700}
+                sx={{ mt: 2 }}
+              >
+                Social Links
+              </Typography>
+
+              <Divider />
+
+              <TextField
+                fullWidth
+                label="GitHub"
+                name="github"
+                value={formData.github}
+                onChange={handleChange}
+                placeholder="https://github.com/username"
+              />
+
+              <TextField
+                fullWidth
+                label="LinkedIn"
+                name="linkedin"
+                value={formData.linkedin}
+                onChange={handleChange}
+                placeholder="https://linkedin.com/in/username"
+              />
+
+              <TextField
+                fullWidth
+                label="Twitter"
+                name="twitter"
+                value={formData.twitter}
+                onChange={handleChange}
+                placeholder="https://twitter.com/username"
+              />
+
+              <TextField
+                fullWidth
+                label="Portfolio"
+                name="portfolio"
+                value={formData.portfolio}
+                onChange={handleChange}
+                placeholder="https://yourportfolio.com"
+              />
+
+              {/* Save */}
+
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  pt: 2,
+                }}
+              >
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  startIcon={
+                    saving ? (
+                      <CircularProgress
+                        size={20}
+                        color="inherit"
+                      />
+                    ) : (
+                      <Save />
+                    )
+                  }
+                  disabled={saving}
+                  sx={{
+                    px: 4,
+                    py: 1.3,
+                    borderRadius: 2,
+                  }}
+                >
+                  {saving
+                    ? "Saving..."
+                    : "Save Changes"}
+                </Button>
+              </Box>
+            </Stack>
           </Box>
         </CardContent>
       </Card>
 
-      {/* Bio */}
-      {user?.bio && (
-        <Card
-          sx={{
-            borderRadius: 3,
-            mb: 3,
-          }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            <Typography
-              variant="h6"
-              fontWeight={700}
-              sx={{ mb: 2 }}
-            >
-              About
-            </Typography>
+      {/* Current Skills Preview */}
 
-            <Typography
-              color="text.secondary"
-              sx={{
-                whiteSpace: "pre-wrap",
-                lineHeight: 1.8,
-              }}
-            >
-              {user.bio}
-            </Typography>
-          </CardContent>
-        </Card>
-      )}
-
-      <Grid container spacing={3}>
-        {/* Professional information */}
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card
-            sx={{
-              height: "100%",
-              borderRadius: 3,
-            }}
+      <Card
+        sx={{
+          borderRadius: 4,
+          mt: 3,
+        }}
+      >
+        <CardContent sx={{ p: 4 }}>
+          <Typography
+            variant="h6"
+            fontWeight={700}
+            sx={{ mb: 2 }}
           >
-            <CardContent sx={{ p: 4 }}>
-              <Typography
-                variant="h6"
-                fontWeight={700}
-                sx={{ mb: 3 }}
-              >
-                Professional Information
-              </Typography>
+            Current Skills
+          </Typography>
 
-              <Stack spacing={2.5}>
-                <Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                  >
-                    Current Position
-                  </Typography>
-
-                  <Typography fontWeight={600}>
-                    {user?.currentPosition || "Not provided"}
-                  </Typography>
-                </Box>
-
-                <Divider />
-
-                <Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                  >
-                    Company
-                  </Typography>
-
-                  <Typography fontWeight={600}>
-                    {user?.company || "Not provided"}
-                  </Typography>
-                </Box>
-
-                <Divider />
-
-                <Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                  >
-                    Years of Experience
-                  </Typography>
-
-                  <Typography fontWeight={600}>
-                    {user?.yearsOfExperience ?? "Not provided"}
-                  </Typography>
-                </Box>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Skills */}
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card
-            sx={{
-              height: "100%",
-              borderRadius: 3,
-            }}
+          <Stack
+            direction="row"
+            spacing={1}
+            flexWrap="wrap"
+            useFlexGap
           >
-            <CardContent sx={{ p: 4 }}>
-              <Typography
-                variant="h6"
-                fontWeight={700}
-                sx={{ mb: 3 }}
-              >
-                Skills
+            {convertToArray(
+              formData.skills
+            ).length > 0 ? (
+              convertToArray(
+                formData.skills
+              ).map((skill, index) => (
+                <Chip
+                  key={`${skill}-${index}`}
+                  label={skill}
+                  variant="outlined"
+                />
+              ))
+            ) : (
+              <Typography color="text.secondary">
+                No skills added yet.
               </Typography>
-
-              {skills.length > 0 ? (
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  flexWrap="wrap"
-                  useFlexGap
-                >
-                  {skills.map((skill, index) => (
-                    <Chip
-                      key={`${skill}-${index}`}
-                      label={skill}
-                      variant="outlined"
-                    />
-                  ))}
-                </Stack>
-              ) : (
-                <Typography color="text.secondary">
-                  No skills added yet.
-                </Typography>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Interests */}
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card
-            sx={{
-              height: "100%",
-              borderRadius: 3,
-            }}
-          >
-            <CardContent sx={{ p: 4 }}>
-              <Typography
-                variant="h6"
-                fontWeight={700}
-                sx={{ mb: 3 }}
-              >
-                Interests
-              </Typography>
-
-              {interests.length > 0 ? (
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  flexWrap="wrap"
-                  useFlexGap
-                >
-                  {interests.map((interest, index) => (
-                    <Chip
-                      key={`${interest}-${index}`}
-                      label={interest}
-                      variant="outlined"
-                    />
-                  ))}
-                </Stack>
-              ) : (
-                <Typography color="text.secondary">
-                  No interests added yet.
-                </Typography>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Social links */}
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card
-            sx={{
-              height: "100%",
-              borderRadius: 3,
-            }}
-          >
-            <CardContent sx={{ p: 4 }}>
-              <Typography
-                variant="h6"
-                fontWeight={700}
-                sx={{ mb: 3 }}
-              >
-                Links
-              </Typography>
-
-              <Stack spacing={2}>
-                {socialLinks.map((social) => {
-                  if (!social.value) {
-                    return null;
-                  }
-
-                  let href = social.value;
-
-                  if (
-                    !href.startsWith("http://") &&
-                    !href.startsWith("https://")
-                  ) {
-                    href = `https://${href}`;
-                  }
-
-                  return (
-                    <Box
-                      key={social.label}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1.5,
-                      }}
-                    >
-                      {social.icon}
-
-                      <Link
-                        href={href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        underline="hover"
-                      >
-                        {social.label}
-                      </Link>
-                    </Box>
-                  );
-                })}
-
-                {!socialLinks.some(
-                  (social) => social.value
-                ) && (
-                  <Typography color="text.secondary">
-                    No links added yet.
-                  </Typography>
-                )}
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+            )}
+          </Stack>
+        </CardContent>
+      </Card>
     </Box>
   );
 };

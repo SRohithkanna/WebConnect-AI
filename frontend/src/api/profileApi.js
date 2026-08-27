@@ -1,5 +1,20 @@
 import apiClient from "./axios.js";
 
+const getMyProfile = async () => {
+  const response = await apiClient.get("/profile/me");
+
+  return response.data;
+};
+
+const updateMyProfile = async (profileData) => {
+  const response = await apiClient.patch(
+    "/profile/me",
+    profileData
+  );
+
+  return response.data;
+};
+
 const getAllDevelopers = async () => {
   const response = await apiClient.get("/profile");
 
@@ -15,6 +30,8 @@ const getPublicProfile = async (username) => {
 };
 
 export {
+  getMyProfile,
+  updateMyProfile,
   getAllDevelopers,
   getPublicProfile,
 };

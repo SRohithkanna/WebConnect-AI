@@ -28,6 +28,8 @@ import PublicProfilePage from "../pages/PublicProfilePage";
 
 import RegisterPage from "../pages/RegisterPage";
 
+import ProfileViewPage from "../pages/ProfileViewPage.jsx";
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -41,7 +43,9 @@ const AppRoutes = () => {
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
 
-          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile" element={<ProfileViewPage />} />
+
+          <Route path="/profile/edit" element={<ProfilePage />} />
 
           <Route path="/ai-analysis" element={<AIAnalysisPage />} />
 
