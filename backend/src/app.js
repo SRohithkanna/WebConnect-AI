@@ -17,6 +17,8 @@ import authRoutes from './routes/auth.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import postRoutes from './routes/post.routes.js';
+import resumeRoutes from './routes/resume.routes.js';
+
 
 const app = express();
 
@@ -67,7 +69,10 @@ app.use(
   '/api/v1/posts',
   postRoutes
 );
-
+app.use(
+  '/api/v1/resume',
+  resumeRoutes
+);
 /*
 |--------------------------------------------------------------------------
 | 404
