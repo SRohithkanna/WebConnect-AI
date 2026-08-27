@@ -1,13 +1,20 @@
-import apiClient from './axios.js';
+import apiClient from "./axios.js";
 
-const getMyProfile = async () => {
+const getAllDevelopers = async () => {
+  const response = await apiClient.get("/profile");
+
+  return response.data;
+};
+
+const getPublicProfile = async (username) => {
   const response = await apiClient.get(
-    '/profiles/me'
+    `/profile/${username}`
   );
 
   return response.data;
 };
 
-export default {
-  getMyProfile,
+export {
+  getAllDevelopers,
+  getPublicProfile,
 };

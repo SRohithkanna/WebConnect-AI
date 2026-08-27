@@ -20,13 +20,21 @@ import AppLayout from "../layouts/AppLayout.jsx";
 
 import PostsPage from "../pages/PostsPage";
 
+import UsersPage from "../pages/UsersPage.jsx";
+
+import DevelopersPage from "../pages/DevelopersPage";
+
+import PublicProfilePage from "../pages/PublicProfilePage";
+
+import RegisterPage from "../pages/RegisterPage";
+
 const AppRoutes = () => {
   return (
     <Routes>
       {/* Public */}
 
       <Route path="/login" element={<LoginPage />} />
-
+      <Route path="/register" element={<RegisterPage />} />
       {/* Protected */}
 
       <Route element={<ProtectedRoute />}>
@@ -42,8 +50,14 @@ const AppRoutes = () => {
           <Route path="/roadmap" element={<RoadmapPage />} />
 
           <Route path="/settings" element={<SettingsPage />} />
-          
+
           <Route path="/posts" element={<PostsPage />} />
+
+          <Route path="/users" element={<UsersPage />} />
+
+          <Route path="/developers" element={<DevelopersPage />} />
+
+          <Route path="/developers/:username" element={<PublicProfilePage />} />
         </Route>
       </Route>
     </Routes>

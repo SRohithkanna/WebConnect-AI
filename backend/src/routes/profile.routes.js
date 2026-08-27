@@ -22,8 +22,18 @@ router.patch(
   validate(updateProfileSchema),
   ProfileController.updateMyProfile
 );
+
+// Get all developers
+router.get(
+  '/',
+  authenticate,
+  ProfileController.getAllDevelopers
+);
+
+// Get one public profile
 router.get(
   '/:username',
   ProfileController.getPublicProfile
 );
+
 export default router;

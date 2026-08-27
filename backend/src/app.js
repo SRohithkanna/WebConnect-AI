@@ -18,7 +18,7 @@ import profileRoutes from './routes/profile.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import postRoutes from './routes/post.routes.js';
 import resumeRoutes from './routes/resume.routes.js';
-
+import userRoutes from './routes/user.route.js';
 
 const app = express();
 
@@ -73,6 +73,11 @@ app.use(
   '/api/v1/resume',
   resumeRoutes
 );
+app.use(
+  '/api/v1/users',
+  userRoutes
+);
+
 /*
 |--------------------------------------------------------------------------
 | 404

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import store from '../store/store.js';
 
 const apiClient = axios.create({
   baseURL:
@@ -7,5 +8,22 @@ const apiClient = axios.create({
 
   withCredentials: true,
 });
+
+apiClient.interceptors.request.use(
+  (config) => {
+    const accessToken =
+      store.getState().auth.accessToken;
+
+    if (accessToken) {
+      config.headers.Authorization =
+        `Bearer ${accessToken}`;
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 export default apiClient;

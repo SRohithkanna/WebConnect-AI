@@ -4,7 +4,10 @@ const create = async (payload) => {
   return User.create(payload);
 };
 
-const findByEmail = async (email, includePassword = false) => {
+const findByEmail = async (
+  email,
+  includePassword = false
+) => {
   const query = User.findOne({ email });
 
   if (includePassword) {
@@ -46,7 +49,10 @@ const findProfileById = async (userId) => {
   return User.findById(userId);
 };
 
-const updateProfile = async (userId, payload) => {
+const updateProfile = async (
+  userId,
+  payload
+) => {
   return User.findByIdAndUpdate(
     userId,
     payload,
@@ -57,7 +63,10 @@ const updateProfile = async (userId, payload) => {
   );
 };
 
-const updateAvatar = async (userId, avatarUrl) => {
+const updateAvatar = async (
+  userId,
+  avatarUrl
+) => {
   return User.findByIdAndUpdate(
     userId,
     {
@@ -69,8 +78,57 @@ const updateAvatar = async (userId, avatarUrl) => {
   );
 };
 
+/* -------------------------------- */
+/* PUBLIC USER PROFILE FUNCTIONS    */
+/* -------------------------------- */
 
+const findAllPublicProfiles = async (
+  currentUserId
+) => {
+  return User.find(
+    {
+      _id: {
+        $ne: currentUserId,
+      },
+    }
+  )
+    .select(
+      '_id name username avatar headline bio location company currentPosition yearsOfExperience portfolio github linkedin twitter skills interests availability'
+    )
+    .sort({
+      createdAt: -1,
+    });
+};
 
+const findPublicProfileById = async (
+  userId
+) => {
+  return User.findById(userId).select(
+    '_id name username avatar headline bio location company currentPosition yearsOfExperience portfolio github linkedin twitter skills interests availability createdAt'
+  );
+};
+
+/* -------------------------------- */
+/* GET ALL OTHER USERS               */
+/* -------------------------------- */
+
+const findAllDevelopers = async (currentUserId) => {
+  const users = await User.find({
+    _id: {
+      $ne: currentUserId,
+    },
+  })
+    .select(
+      "_id name username email avatar headline bio location company currentPosition yearsOfExperience portfolio github linkedin twitter skills interests availability role createdAt"
+    )
+    .sort({
+      createdAt: -1,
+    });
+
+  console.log("ALL USERS:", users);
+
+  return users;
+};
 export default {
   create,
   findByEmail,
@@ -82,4 +140,7 @@ export default {
   findProfileById,
   updateProfile,
   updateAvatar,
+  findAllPublicProfiles,
+  findPublicProfileById,
+  findAllDevelopers,
 };

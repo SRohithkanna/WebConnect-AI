@@ -45,7 +45,7 @@ const logoutAllDevices = async () => {
 
 const getCurrentUser = async () => {
   const response = await apiClient.get(
-    '/users/me'
+    '/profile/me'
   );
 
   return response.data;

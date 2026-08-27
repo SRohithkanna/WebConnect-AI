@@ -13,8 +13,8 @@ const userSchema = new mongoose.Schema(
 
     username: {
       type: String,
-      required: true,
       unique: true,
+      sparse: true,
       trim: true,
       lowercase: true,
       minlength: 3,
@@ -41,22 +41,6 @@ const userSchema = new mongoose.Schema(
       default: '',
     },
 
-    bio: {
-      type: String,
-      default: '',
-      maxlength: 300,
-    },
-
-    location: {
-      type: String,
-      default: '',
-    },
-
-    website: {
-      type: String,
-      default: '',
-    },
-
     headline: {
       type: String,
       trim: true,
@@ -75,6 +59,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
       maxlength: 100,
+      default: '',
+    },
+
+    website: {
+      type: String,
+      trim: true,
       default: '',
     },
 
@@ -134,7 +124,11 @@ const userSchema = new mongoose.Schema(
 
     availability: {
       type: String,
-      enum: ['Open to Work', 'Open to Freelance', 'Not Available'],
+      enum: [
+        'Open to Work',
+        'Open to Freelance',
+        'Not Available',
+      ],
       default: 'Open to Work',
     },
 
@@ -160,6 +154,51 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+/* -------------------------------- */
+/* GENERATE USERNAME                */
+/* -------------------------------- */
+
+userSchema.pre('validate', async function (next) {
+  if (this.username) {
+    return next();
+  }
+
+  if (!this.name) {
+    return next();
+  }
+
+  let baseUsername = this.name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '')
+    .substring(0, 20);
+
+  if (!baseUsername) {
+    baseUsername = 'user';
+  }
+
+  let username = baseUsername;
+  let count = 1;
+
+  while (
+    await mongoose.models.User.exists({
+      username,
+      _id: { $ne: this._id },
+    })
+  ) {
+    username = `${baseUsername}${count}`;
+    count++;
+  }
+
+  this.username = username;
+
+  next();
+});
+
+/* -------------------------------- */
+/* PASSWORD HASHING                 */
+/* -------------------------------- */
+
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
@@ -167,14 +206,27 @@ userSchema.pre('save', async function (next) {
 
   const salt = await bcrypt.genSalt(12);
 
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(
+    this.password,
+    salt
+  );
 
   next();
 });
 
-userSchema.methods.comparePassword = async function (password) {
+/* -------------------------------- */
+/* PASSWORD COMPARISON               */
+/* -------------------------------- */
+
+userSchema.methods.comparePassword = async function (
+  password
+) {
   return bcrypt.compare(password, this.password);
 };
+
+/* -------------------------------- */
+/* REMOVE PASSWORD FROM RESPONSE     */
+/* -------------------------------- */
 
 userSchema.methods.toJSON = function () {
   const user = this.toObject();

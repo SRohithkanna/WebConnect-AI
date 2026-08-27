@@ -50,7 +50,13 @@ const updateMyProfile = async (userId, payload) => {
     profileCompletion: calculateProfileCompletion(user),
   };
 };
+const getAllDevelopers = async (currentUserId) => {
+  const users = await UserRepository.findAllDevelopers(
+    currentUserId
+  );
 
+  return users;
+};
 const getPublicProfile = async (username) => {
   const user = await UserRepository.findByUsername(username);
 
@@ -70,4 +76,5 @@ export default {
   getMyProfile,
   updateMyProfile,
   getPublicProfile,
+  getAllDevelopers,
 };

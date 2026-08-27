@@ -53,8 +53,26 @@ const getPublicProfile = async (req, res, next) => {
   }
 };
 
+const getAllDevelopers = async (req, res, next) => {
+  try {
+    const developers =
+      await ProfileService.getAllDevelopers(
+        req.user.userId
+      );
+
+    return successResponse({
+      res,
+      message: 'Developers fetched successfully.',
+      data: developers,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   getMyProfile,
   updateMyProfile,
   getPublicProfile,
+  getAllDevelopers,
 };
