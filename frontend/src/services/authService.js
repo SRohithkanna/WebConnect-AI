@@ -1,9 +1,10 @@
-import apiClient from '../api/axios.js';
-import authApi from '../api/authApi.js';
+import apiClient from "../api/axios.js";
+
+import authApi from "../api/authApi.js";
 
 const register = async (userData) => {
   const response = await authApi.post(
-    '/auth/register',
+    "/auth/register",
     userData
   );
 
@@ -12,7 +13,7 @@ const register = async (userData) => {
 
 const login = async (credentials) => {
   const response = await authApi.post(
-    '/auth/login',
+    "/auth/login",
     credentials
   );
 
@@ -21,7 +22,7 @@ const login = async (credentials) => {
 
 const refreshAccessToken = async () => {
   const response = await authApi.post(
-    '/auth/refresh'
+    "/auth/refresh"
   );
 
   return response.data;
@@ -29,7 +30,7 @@ const refreshAccessToken = async () => {
 
 const logout = async () => {
   const response = await authApi.post(
-    '/auth/logout'
+    "/auth/logout"
   );
 
   return response.data;
@@ -37,7 +38,7 @@ const logout = async () => {
 
 const logoutAllDevices = async () => {
   const response = await authApi.post(
-    '/auth/logout-all'
+    "/auth/logout-all"
   );
 
   return response.data;
@@ -45,7 +46,7 @@ const logoutAllDevices = async () => {
 
 const getCurrentUser = async () => {
   const response = await apiClient.get(
-    '/profile/me'
+    "/profile/me"
   );
 
   return response.data;

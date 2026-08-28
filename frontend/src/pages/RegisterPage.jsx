@@ -88,9 +88,9 @@ const RegisterPage = () => {
 
       // If your backend automatically logs the user in,
       // redirect to dashboard.
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1000);
+     setTimeout(() => {
+  navigate("/login");
+}, 1000);
     } catch (error) {
       console.error(
         "Registration failed:",

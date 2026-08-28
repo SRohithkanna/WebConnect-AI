@@ -21,7 +21,7 @@ import RouteOutlined from '@mui/icons-material/RouteOutlined';
 import { useEffect, useState } from 'react';
 
 import aiApi from '../api/aiApi.js';
-
+import apiClient from '../api/axios.js';
 const AIAnalysisPage = () => {
   const [analysis, setAnalysis] = useState(null);
 
@@ -67,29 +67,75 @@ const AIAnalysisPage = () => {
     loadLatestAnalysis();
   }, []);
 
-  const handleAnalyze = async () => {
-    try {
-      setAnalyzing(true);
-      setError('');
+const handleAnalyze = async () => {
+  try {
+    setAnalyzing(true);
+    setError('');
 
-      const response =
-        await aiApi.analyzeProfile();
+    // ---------------------------------------------
+    // 1. Get latest profile
+    // ---------------------------------------------
 
-      setAnalysis(response.data);
-    } catch (err) {
-      console.error(
-        'AI profile analysis failed:',
-        err
-      );
+    const profileResponse =
+      await apiClient.get('/profile/me');
 
+    const profile =
+      profileResponse.data?.data ||
+      profileResponse.data;
+
+    console.log(
+      'PROFILE BEFORE AI ANALYSIS:',
+      profile
+    );
+
+    // ---------------------------------------------
+    // 2. Check profile completion
+    // ---------------------------------------------
+
+    const profileCompletion =
+      profile?.profileCompletion ?? 0;
+
+    console.log(
+      'PROFILE COMPLETION:',
+      profileCompletion
+    );
+
+    // ---------------------------------------------
+    // 3. Do NOT allow AI analysis if profile
+    //    is not completely filled
+    // ---------------------------------------------
+
+    if (profileCompletion < 50) {
       setError(
-        err?.response?.data?.message ||
-          'Unable to analyze your profile.'
+        'Please fill out your profile completely before analyzing your profile.'
       );
-    } finally {
-      setAnalyzing(false);
+
+      return;
     }
-  };
+
+    // ---------------------------------------------
+    // 4. Profile is complete → call AI
+    // ---------------------------------------------
+
+    const response =
+      await aiApi.analyzeProfile();
+
+    setAnalysis(response.data);
+
+  } catch (err) {
+    console.error(
+      'AI profile analysis failed:',
+      err
+    );
+
+    setError(
+      err?.response?.data?.message ||
+        'Unable to analyze your profile.'
+    );
+  } finally {
+    setAnalyzing(false);
+  }
+};
 
   /*
    * Initial page loading

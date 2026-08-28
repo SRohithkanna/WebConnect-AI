@@ -384,6 +384,7 @@ const ProfilePage = () => {
                 inputProps={{
                   maxLength: 120,
                 }}
+                required
               />
 
               <TextField
@@ -398,6 +399,7 @@ const ProfilePage = () => {
                 inputProps={{
                   maxLength: 500,
                 }}
+                required
               />
 
               {/* Experience */}
@@ -419,6 +421,7 @@ const ProfilePage = () => {
                 value={formData.currentPosition}
                 onChange={handleChange}
                 placeholder="Software Engineer"
+                required
               />
 
               <TextField
@@ -441,6 +444,7 @@ const ProfilePage = () => {
                   min: 0,
                   max: 50,
                 }}
+                required
               />
 
               {/* Location */}
@@ -462,6 +466,7 @@ const ProfilePage = () => {
                 value={formData.location}
                 onChange={handleChange}
                 placeholder="Chennai, India"
+                required
               />
 
               {/* Skills */}
@@ -484,6 +489,7 @@ const ProfilePage = () => {
                 onChange={handleChange}
                 placeholder="React, Node.js, MongoDB"
                 helperText="Separate skills with commas"
+                required
               />
 
               <TextField
@@ -494,6 +500,7 @@ const ProfilePage = () => {
                 onChange={handleChange}
                 placeholder="AI, Open Source, System Design"
                 helperText="Separate interests with commas"
+                required
               />
 
               {/* Availability */}

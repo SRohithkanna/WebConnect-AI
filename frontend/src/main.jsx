@@ -1,29 +1,32 @@
-import React from 'react';
+import React from "react";
+import ReactDOM from "react-dom/client";
 
-import ReactDOM from 'react-dom/client';
+import { Provider } from "react-redux";
 
-import { Provider } from 'react-redux';
+import { BrowserRouter } from "react-router-dom";
 
-import App from './app/App.jsx';
+import App from "./app/App.jsx";
 
-import store from './store/store.js';
+import store from "./store/store.js";
 
-import setupInterceptors from './api/setupInterceptors.js';
+import setupInterceptors from "./api/setupInterceptors.js";
 
-import AuthBootstrap from './features/auth/AuthBootstrap.jsx';
+import AuthBootstrap from "./features/auth/AuthBootstrap.jsx";
 
-import './index.css';
+import "./index.css";
 
 setupInterceptors();
 
 ReactDOM.createRoot(
-  document.getElementById('root')
+  document.getElementById("root")
 ).render(
   <React.StrictMode>
-    <Provider store={store}>
-      <AuthBootstrap>
-        <App />
-      </AuthBootstrap>
-    </Provider>
+    <BrowserRouter>
+      <Provider store={store}>
+        <AuthBootstrap>
+          <App />
+        </AuthBootstrap>
+      </Provider>
+    </BrowserRouter>
   </React.StrictMode>
 );
