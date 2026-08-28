@@ -553,7 +553,9 @@ const ProfilePage = () => {
                 name="linkedin"
                 value={formData.linkedin}
                 onChange={handleChange}
+                helperText="Add https://"
                 placeholder="https://linkedin.com/in/username"
+                required
               />
 
               <TextField
