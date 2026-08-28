@@ -17,6 +17,7 @@ import {
   SettingsOutlined,
   LogoutOutlined,
   DynamicFeedOutlined,
+  QuestionAnswerOutlined,
 } from "@mui/icons-material";
 
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
@@ -65,6 +66,11 @@ const navigationItems = [
     path: "/roadmap",
     icon: <Route />,
   },
+  {
+  label: "Interview",
+  path: "/interview",
+  icon: <QuestionAnswerOutlined />,
+},
 ];
 
 const AppLayout = () => {

@@ -30,6 +30,8 @@ import RegisterPage from "../pages/RegisterPage";
 
 import ProfileViewPage from "../pages/ProfileViewPage.jsx";
 
+import InterviewPage from "../pages/InterviewPage.jsx";
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -62,6 +64,8 @@ const AppRoutes = () => {
           <Route path="/developers" element={<DevelopersPage />} />
 
           <Route path="/developers/:username" element={<PublicProfilePage />} />
+          
+          <Route path="/interview" element={<InterviewPage />} />
         </Route>
       </Route>
     </Routes>

@@ -10,15 +10,50 @@ import buildProfileAnalysisPrompt from '../ai/prompts/profileAnalyzer.prompt.js'
 import parseProfileAnalysis from '../ai/parsers/profileAnalysis.parser.js';
 
 
-
+const isProfileComplete = (profile) => {
+  return Boolean(
+    profile.headline?.trim() &&
+    profile.bio?.trim() &&
+    profile.location?.trim() &&
+    profile.currentPosition?.trim() &&
+    profile.yearsOfExperience !== undefined &&
+    profile.yearsOfExperience !== null &&
+    profile.skills?.length > 0 &&
+    profile.interests?.length > 0 &&
+    (
+      profile.linkedin?.trim() ||
+      profile.github?.trim() ||
+      profile.twitter?.trim()
+    )
+  );
+};
 
 
 const analyzeProfile = async (userId) => {
-  const profile = await UserRepository.findProfileById(userId);
+  const profile =
+    await UserRepository.findProfileById(userId);
 
   if (!profile) {
     const error = new Error('User not found.');
-    error.statusCode = StatusCodes.NOT_FOUND;
+
+    error.statusCode =
+      StatusCodes.NOT_FOUND;
+
+    throw error;
+  }
+
+  // ---------------------------------------
+  // Check profile completion
+  // ---------------------------------------
+
+  if (!isProfileComplete(profile)) {
+    const error = new Error(
+      'Please complete your profile before analyzing your profile.'
+    );
+
+    error.statusCode =
+      StatusCodes.BAD_REQUEST;
+
     throw error;
   }
 
@@ -39,7 +74,8 @@ const analyzeProfile = async (userId) => {
     interests: profile.interests,
   };
 
-  const prompt = buildProfileAnalysisPrompt(profileData);
+  const prompt =
+    buildProfileAnalysisPrompt(profileData);
 
   const aiResponse =
     await GeminiProvider.generateContent(prompt);
@@ -47,7 +83,8 @@ const analyzeProfile = async (userId) => {
   let analysis;
 
   try {
-    analysis = parseProfileAnalysis(aiResponse);
+    analysis =
+      parseProfileAnalysis(aiResponse);
   } catch (error) {
     const parsingError = new Error(
       'Failed to parse AI analysis response.'
@@ -68,6 +105,7 @@ const analyzeProfile = async (userId) => {
   return savedAnalysis;
 };
 
+
 const getLatestAnalysis = async (userId) => {
   const analysis =
     await ProfileAnalysisRepository.findLatestByUserId(
@@ -79,13 +117,15 @@ const getLatestAnalysis = async (userId) => {
       'No profile analysis found.'
     );
 
-    error.statusCode = StatusCodes.NOT_FOUND;
+    error.statusCode =
+      StatusCodes.NOT_FOUND;
 
     throw error;
   }
 
   return analysis;
 };
+
 
 const getAnalysisHistory = async (
   userId,
@@ -94,15 +134,18 @@ const getAnalysisHistory = async (
 ) => {
   const skip = (page - 1) * limit;
 
-  const [analyses, total] = await Promise.all([
-    ProfileAnalysisRepository.findByUserId(
-      userId,
-      skip,
-      limit
-    ),
+  const [analyses, total] =
+    await Promise.all([
+      ProfileAnalysisRepository.findByUserId(
+        userId,
+        skip,
+        limit
+      ),
 
-    ProfileAnalysisRepository.countByUserId(userId),
-  ]);
+      ProfileAnalysisRepository.countByUserId(
+        userId
+      ),
+    ]);
 
   return {
     analyses,
@@ -110,12 +153,16 @@ const getAnalysisHistory = async (
       page,
       limit,
       total,
-      totalPages: Math.ceil(total / limit),
-      hasNextPage: page < Math.ceil(total / limit),
+      totalPages: Math.ceil(
+        total / limit
+      ),
+      hasNextPage:
+        page < Math.ceil(total / limit),
       hasPreviousPage: page > 1,
     },
   };
 };
+
 
 export default {
   analyzeProfile,

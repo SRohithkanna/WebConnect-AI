@@ -19,6 +19,7 @@ import aiRoutes from './routes/ai.routes.js';
 import postRoutes from './routes/post.routes.js';
 import resumeRoutes from './routes/resume.routes.js';
 import userRoutes from './routes/user.route.js';
+import interviewRoutes from './routes/interview.routes.js';
 
 const app = express();
 
@@ -76,6 +77,10 @@ app.use(
 app.use(
   '/api/v1/users',
   userRoutes
+);
+app.use(
+  '/api/v1/interview',
+  interviewRoutes
 );
 
 /*

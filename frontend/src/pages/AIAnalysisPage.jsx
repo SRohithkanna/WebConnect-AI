@@ -21,14 +21,12 @@ import RouteOutlined from '@mui/icons-material/RouteOutlined';
 import { useEffect, useState } from 'react';
 
 import aiApi from '../api/aiApi.js';
-import apiClient from '../api/axios.js';
+
+
 const AIAnalysisPage = () => {
   const [analysis, setAnalysis] = useState(null);
-
   const [loading, setLoading] = useState(true);
-
   const [analyzing, setAnalyzing] = useState(false);
-
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -42,13 +40,7 @@ const AIAnalysisPage = () => {
 
         setAnalysis(response.data);
       } catch (err) {
-        /*
-         * 404 means the user has not
-         * generated an analysis yet.
-         */
-        if (
-          err?.response?.status !== 404
-        ) {
+        if (err?.response?.status !== 404) {
           console.error(
             'Failed to load latest analysis:',
             err
@@ -67,79 +59,30 @@ const AIAnalysisPage = () => {
     loadLatestAnalysis();
   }, []);
 
-const handleAnalyze = async () => {
-  try {
-    setAnalyzing(true);
-    setError('');
+  const handleAnalyze = async () => {
+    try {
+      setAnalyzing(true);
+      setError('');
 
-    // ---------------------------------------------
-    // 1. Get latest profile
-    // ---------------------------------------------
+      const response =
+        await aiApi.analyzeProfile();
 
-    const profileResponse =
-      await apiClient.get('/profile/me');
-
-    const profile =
-      profileResponse.data?.data ||
-      profileResponse.data;
-
-    console.log(
-      'PROFILE BEFORE AI ANALYSIS:',
-      profile
-    );
-
-    // ---------------------------------------------
-    // 2. Check profile completion
-    // ---------------------------------------------
-
-    const profileCompletion =
-      profile?.profileCompletion ?? 0;
-
-    console.log(
-      'PROFILE COMPLETION:',
-      profileCompletion
-    );
-
-    // ---------------------------------------------
-    // 3. Do NOT allow AI analysis if profile
-    //    is not completely filled
-    // ---------------------------------------------
-
-    if (profileCompletion < 50) {
-      setError(
-        'Please fill out your profile completely before analyzing your profile.'
+      setAnalysis(response.data);
+    } catch (err) {
+      console.error(
+        'AI profile analysis failed:',
+        err
       );
 
-      return;
+      setError(
+        err?.response?.data?.message ||
+          'Unable to analyze your profile.'
+      );
+    } finally {
+      setAnalyzing(false);
     }
+  };
 
-    // ---------------------------------------------
-    // 4. Profile is complete → call AI
-    // ---------------------------------------------
-
-    const response =
-      await aiApi.analyzeProfile();
-
-    setAnalysis(response.data);
-
-  } catch (err) {
-    console.error(
-      'AI profile analysis failed:',
-      err
-    );
-
-    setError(
-      err?.response?.data?.message ||
-        'Unable to analyze your profile.'
-    );
-  } finally {
-    setAnalyzing(false);
-  }
-};
-
-  /*
-   * Initial page loading
-   */
   if (loading) {
     return (
       <Stack spacing={4}>
@@ -160,9 +103,7 @@ const handleAnalyze = async () => {
             >
               <CircularProgress />
 
-              <Typography
-                color="text.secondary"
-              >
+              <Typography color="text.secondary">
                 Loading your latest AI analysis...
               </Typography>
             </Stack>
@@ -345,8 +286,7 @@ const AnalysisResult = ({
     },
     {
       label: 'System Design',
-      value:
-        analysis.systemDesignScore,
+      value: analysis.systemDesignScore,
     },
     {
       label: 'Testing',
@@ -360,8 +300,6 @@ const AnalysisResult = ({
 
   return (
     <Stack spacing={3}>
-      {/* Overall + Skills */}
-
       <Box
         sx={{
           display: 'grid',
@@ -372,131 +310,12 @@ const AnalysisResult = ({
           gap: 3,
         }}
       >
-        {/* Overall */}
+        <OverallReadiness analysis={analysis} />
 
-        <Card>
-          <CardContent
-            sx={{
-              p: 3,
-              height: '100%',
-              '&:last-child': {
-                pb: 3,
-              },
-            }}
-          >
-            <Typography
-              variant="subtitle1"
-              fontWeight={600}
-              color="text.primary"
-            >
-              Overall Readiness
-            </Typography>
-
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                mt: 0.5,
-              }}
-            >
-              Latest AI assessment
-            </Typography>
-
-            <Box
-              sx={{
-                mt: 4,
-                display: 'flex',
-                alignItems: 'baseline',
-                gap: 1,
-              }}
-            >
-              <Typography
-                variant="h1"
-                fontWeight={700}
-                color="primary.main"
-              >
-                {analysis.overallScore}
-              </Typography>
-
-              <Typography
-                variant="h6"
-                color="text.secondary"
-              >
-                / 100
-              </Typography>
-            </Box>
-
-            <Box
-              sx={{
-                mt: 2,
-              }}
-            >
-              <Typography
-                variant="body2"
-                color="text.secondary"
-              >
-                Placement readiness
-              </Typography>
-
-              <Typography
-                variant="h6"
-                fontWeight={700}
-                color="text.primary"
-                sx={{
-                  mt: 0.5,
-                }}
-              >
-                {analysis.placementReadiness}%
-              </Typography>
-            </Box>
-          </CardContent>
-        </Card>
-
-        {/* Skills */}
-
-        <Card>
-          <CardContent
-            sx={{
-              p: 3,
-              '&:last-child': {
-                pb: 3,
-              },
-            }}
-          >
-            <Typography
-              variant="subtitle1"
-              fontWeight={600}
-              color="text.primary"
-            >
-              Technical Skills
-            </Typography>
-
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                mt: 0.5,
-                mb: 3,
-              }}
-            >
-              AI-assessed competency across key
-              engineering areas.
-            </Typography>
-
-            <Stack spacing={2.5}>
-              {skillScores.map((skill) => (
-                <SkillScore
-                  key={skill.label}
-                  label={skill.label}
-                  value={skill.value}
-                />
-              ))}
-            </Stack>
-          </CardContent>
-        </Card>
+        <TechnicalSkills
+          skillScores={skillScores}
+        />
       </Box>
-
-      {/* Strengths + Weaknesses */}
 
       <Box
         sx={{
@@ -521,152 +340,15 @@ const AnalysisResult = ({
         />
       </Box>
 
-      {/* Recommendations */}
+      <Recommendations
+        recommendations={
+          analysis.recommendations
+        }
+      />
 
-      <Card>
-        <CardContent
-          sx={{
-            p: 3,
-            '&:last-child': {
-              pb: 3,
-            },
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              mb: 1,
-            }}
-          >
-            <LightbulbOutlined
-              sx={{
-                color: 'primary.main',
-              }}
-            />
-
-            <Typography
-              variant="h6"
-              fontWeight={600}
-              color="text.primary"
-            >
-              AI Recommendations
-            </Typography>
-          </Box>
-
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              mb: 3,
-            }}
-          >
-            High-impact actions recommended based
-            on your current profile.
-          </Typography>
-
-          <Stack spacing={2}>
-            {analysis.recommendations.map(
-              (recommendation, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    display: 'flex',
-                    gap: 2,
-                    p: 2,
-                    borderRadius: 2,
-                    bgcolor:
-                      'rgba(255,255,255,0.03)',
-                    border:
-                      '1px solid rgba(255,255,255,0.06)',
-                  }}
-                >
-                  <Chip
-                    label={index + 1}
-                    size="small"
-                    color="primary"
-                  />
-
-                  <Typography
-                    variant="body2"
-                    color="text.primary"
-                    sx={{
-                      lineHeight: 1.7,
-                    }}
-                  >
-                    {recommendation}
-                  </Typography>
-                </Box>
-              )
-            )}
-          </Stack>
-        </CardContent>
-      </Card>
-
-      {/* Roadmap */}
-
-      <Card>
-        <CardContent
-          sx={{
-            p: 3,
-            '&:last-child': {
-              pb: 3,
-            },
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              mb: 1,
-            }}
-          >
-            <RouteOutlined
-              sx={{
-                color: 'primary.main',
-              }}
-            />
-
-            <Typography
-              variant="h6"
-              fontWeight={600}
-              color="text.primary"
-            >
-              8-Week Development Roadmap
-            </Typography>
-          </Box>
-
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              mb: 3,
-            }}
-          >
-            A personalized sequence of learning
-            and implementation goals.
-          </Typography>
-
-          <Stack spacing={0}>
-            {analysis.roadmap.map(
-              (phase, index) => (
-                <RoadmapItem
-                  key={phase.week}
-                  phase={phase}
-                  isLast={
-                    index ===
-                    analysis.roadmap.length - 1
-                  }
-                />
-              )
-            )}
-          </Stack>
-        </CardContent>
-      </Card>
-
-      {/* Re-analyze */}
+      <Roadmap
+        roadmap={analysis.roadmap}
+      />
 
       <Box
         sx={{
@@ -678,9 +360,7 @@ const AnalysisResult = ({
           variant="outlined"
           startIcon={
             analyzing ? (
-              <CircularProgress
-                size={18}
-              />
+              <CircularProgress size={18} />
             ) : (
               <AutoAwesome />
             )
@@ -694,6 +374,285 @@ const AnalysisResult = ({
         </Button>
       </Box>
     </Stack>
+  );
+};
+
+
+/* =========================================================
+   OVERALL READINESS
+========================================================= */
+
+const OverallReadiness = ({
+  analysis,
+}) => {
+  return (
+    <Card>
+      <CardContent
+        sx={{
+          p: 3,
+          height: '100%',
+          '&:last-child': {
+            pb: 3,
+          },
+        }}
+      >
+        <Typography
+          variant="subtitle1"
+          fontWeight={600}
+        >
+          Overall Readiness
+        </Typography>
+
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ mt: 0.5 }}
+        >
+          Latest AI assessment
+        </Typography>
+
+        <Box
+          sx={{
+            mt: 4,
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: 1,
+          }}
+        >
+          <Typography
+            variant="h1"
+            fontWeight={700}
+            color="primary.main"
+          >
+            {analysis.overallScore}
+          </Typography>
+
+          <Typography
+            variant="h6"
+            color="text.secondary"
+          >
+            / 100
+          </Typography>
+        </Box>
+
+        <Box sx={{ mt: 2 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+          >
+            Placement readiness
+          </Typography>
+
+          <Typography
+            variant="h6"
+            fontWeight={700}
+            sx={{ mt: 0.5 }}
+          >
+            {analysis.placementReadiness}%
+          </Typography>
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+
+
+/* =========================================================
+   TECHNICAL SKILLS
+========================================================= */
+
+const TechnicalSkills = ({
+  skillScores,
+}) => {
+  return (
+    <Card>
+      <CardContent
+        sx={{
+          p: 3,
+          '&:last-child': {
+            pb: 3,
+          },
+        }}
+      >
+        <Typography
+          variant="subtitle1"
+          fontWeight={600}
+        >
+          Technical Skills
+        </Typography>
+
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            mt: 0.5,
+            mb: 3,
+          }}
+        >
+          AI-assessed competency across key
+          engineering areas.
+        </Typography>
+
+        <Stack spacing={2.5}>
+          {skillScores.map((skill) => (
+            <SkillScore
+              key={skill.label}
+              label={skill.label}
+              value={skill.value}
+            />
+          ))}
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+};
+
+
+/* =========================================================
+   RECOMMENDATIONS
+========================================================= */
+
+const Recommendations = ({
+  recommendations,
+}) => {
+  return (
+    <Card>
+      <CardContent
+        sx={{
+          p: 3,
+          '&:last-child': {
+            pb: 3,
+          },
+        }}
+      >
+        <SectionHeader
+          icon={<LightbulbOutlined />}
+          title="AI Recommendations"
+          description="High-impact actions recommended based on your current profile."
+        />
+
+        <Stack spacing={2}>
+          {recommendations?.map(
+            (recommendation, index) => (
+              <Box
+                key={index}
+                sx={{
+                  display: 'flex',
+                  gap: 2,
+                  p: 2,
+                  borderRadius: 2,
+                  bgcolor:
+                    'rgba(255,255,255,0.03)',
+                  border:
+                    '1px solid rgba(255,255,255,0.06)',
+                }}
+              >
+                <Chip
+                  label={index + 1}
+                  size="small"
+                  color="primary"
+                />
+
+                <Typography
+                  variant="body2"
+                  sx={{
+                    lineHeight: 1.7,
+                  }}
+                >
+                  {recommendation}
+                </Typography>
+              </Box>
+            )
+          )}
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+};
+
+
+/* =========================================================
+   ROADMAP
+========================================================= */
+
+const Roadmap = ({ roadmap }) => {
+  return (
+    <Card>
+      <CardContent
+        sx={{
+          p: 3,
+          '&:last-child': {
+            pb: 3,
+          },
+        }}
+      >
+        <SectionHeader
+          icon={<RouteOutlined />}
+          title="8-Week Development Roadmap"
+          description="A personalized sequence of learning and implementation goals."
+        />
+
+        <Stack>
+          {roadmap?.map((phase, index) => (
+            <RoadmapItem
+              key={phase.week}
+              phase={phase}
+              isLast={
+                index === roadmap.length - 1
+              }
+            />
+          ))}
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+};
+
+
+/* =========================================================
+   SECTION HEADER
+========================================================= */
+
+const SectionHeader = ({
+  icon,
+  title,
+  description,
+}) => {
+  return (
+    <>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          mb: 1,
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            color: 'primary.main',
+          }}
+        >
+          {icon}
+        </Box>
+
+        <Typography
+          variant="h6"
+          fontWeight={600}
+        >
+          {title}
+        </Typography>
+      </Box>
+
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ mb: 3 }}
+      >
+        {description}
+      </Typography>
+    </>
   );
 };
 
@@ -715,10 +674,7 @@ const SkillScore = ({
           mb: 0.75,
         }}
       >
-        <Typography
-          variant="body2"
-          color="text.primary"
-        >
+        <Typography variant="body2">
           {label}
         </Typography>
 
@@ -773,7 +729,6 @@ const InsightCard = ({
             display: 'flex',
             alignItems: 'center',
             gap: 1,
-            mb: 1,
           }}
         >
           <Box
@@ -788,7 +743,6 @@ const InsightCard = ({
           <Typography
             variant="h6"
             fontWeight={600}
-            color="text.primary"
           >
             {title}
           </Typography>
@@ -797,7 +751,7 @@ const InsightCard = ({
         <Divider sx={{ my: 2 }} />
 
         <Stack spacing={2}>
-          {items.map((item, index) => (
+          {items?.map((item, index) => (
             <Box
               key={index}
               sx={{
@@ -807,9 +761,6 @@ const InsightCard = ({
             >
               <Typography
                 color="primary.main"
-                sx={{
-                  lineHeight: 1.6,
-                }}
               >
                 •
               </Typography>
@@ -898,7 +849,6 @@ const RoadmapItem = ({
         <Typography
           variant="subtitle2"
           fontWeight={600}
-          color="text.primary"
         >
           Week {phase.week}
         </Typography>
@@ -917,5 +867,6 @@ const RoadmapItem = ({
     </Box>
   );
 };
+
 
 export default AIAnalysisPage;

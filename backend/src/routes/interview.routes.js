@@ -1,43 +1,33 @@
 import express from 'express';
 
-import AIController from '../controllers/AIController.js';
-
 import InterviewController from '../controllers/InterviewController.js';
 
 import authenticate from '../middlewares/auth.middleware.js';
+
 
 const router = express.Router();
 
 
 // ---------------------------------------
-// Profile Analysis
+// Generate interview questions
 // ---------------------------------------
 
 router.post(
-  '/profile-analysis',
+  '/generate',
   authenticate,
-  AIController.analyzeProfile
+  InterviewController.generateInterviewQuestions
 );
+
+
+// ---------------------------------------
+// Get latest saved interview
+// ---------------------------------------
 
 router.get(
-  '/profile-analysis',
+  '/',
   authenticate,
-  AIController.getLatestAnalysis
+  InterviewController.getLatestInterview
 );
-
-router.get(
-  '/profile-analysis/latest',
-  authenticate,
-  AIController.getLatestAnalysis
-);
-
-router.get(
-  '/profile-analysis/history',
-  authenticate,
-  AIController.getAnalysisHistory
-);
-
-
 
 
 export default router;
