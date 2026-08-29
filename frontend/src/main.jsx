@@ -1,3 +1,10 @@
+if (import.meta.env.PROD) {
+  console.log = () => {};
+  console.debug = () => {};
+  console.info = () => {};
+  console.warn = () => {};
+}
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 

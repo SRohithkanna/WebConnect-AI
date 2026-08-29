@@ -169,7 +169,7 @@ const RegisterPage = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="Rohith Kanna"
+                  placeholder="xyz"
                   disabled={loading}
                 />
 
@@ -179,7 +179,7 @@ const RegisterPage = () => {
                   name="username"
                   value={formData.username}
                   onChange={handleChange}
-                  placeholder="rohithkanna"
+                  placeholder="username123"
                   helperText="Letters, numbers and underscores only"
                   disabled={loading}
                 />
