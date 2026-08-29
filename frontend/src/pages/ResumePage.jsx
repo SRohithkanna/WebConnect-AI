@@ -66,22 +66,32 @@ const ResumePage = () => {
   // Load existing analysis
   // ---------------------------------------
   const loadAnalysis = async () => {
-    try {
-      const response = await getResumeAnalysis();
+  try {
+    const response = await getResumeAnalysis();
 
-      console.log('ANALYSIS RESPONSE:', response);
+    console.log(
+      'RESUME ANALYSIS RESPONSE:',
+      response
+    );
 
-      setAnalysis(response.data || null);
-    } catch (error) {
-      // 404 simply means analysis doesn't exist yet
-      if (error.response?.status !== 404) {
-        console.error(
-          'Failed to load resume analysis:',
-          error
-        );
-      }
+    setAnalysis(
+      response.data?.aiAnalysis || null
+    );
+  } catch (error) {
+    // 404 means analysis has not been generated yet
+    if (error.response?.status !== 404) {
+      console.error(
+        'Failed to load resume analysis:',
+        error
+      );
+
+      setError(
+        error.response?.data?.message ||
+          'Unable to load resume analysis.'
+      );
     }
-  };
+  }
+};
 
   useEffect(() => {
     loadResume();
